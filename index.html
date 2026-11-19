@@ -112,7 +112,25 @@ thead th{border-top:0;font-size:12px;color:var(--muted);font-weight:700;backgrou
 td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700}
 .foot{font-size:12px;color:var(--muted);margin-top:8px}
 
-@media (max-width:760px){header.top{grid-template-columns:1fr}.ni{grid-template-columns:1fr}}
+.ev-list{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ev-day{padding:8px 16px;background:var(--sunk);font-weight:700;font-size:13px;color:var(--muted)}
+.ev{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:4px 14px;padding:12px 16px;border-top:1px solid var(--line);align-items:start}
+.ev-day+.ev{border-top:0}
+.ev.done{opacity:.72}
+.ev.next{background:var(--gold-soft);opacity:1}
+.ev-time{font-family:var(--f-mono);font-size:16px;font-weight:600;line-height:1.4}
+.ev-time small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.ev-main{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ev-name{font-weight:700;line-height:1.5}
+.ev-vals{font-family:var(--f-mono);font-size:13px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.ev-vals b{color:var(--ink);font-weight:600}
+.ev-note{font-size:14px}
+.ev-note.res{color:var(--gold);font-weight:700}
+.ev-gold{font-size:12px;font-weight:700;white-space:nowrap;border-radius:4px;padding:0 7px;line-height:1.8}
+.g3{background:var(--bear-soft);color:var(--bear)} .g2{background:var(--gold-soft);color:var(--gold)}
+.g1,.g0{background:var(--flat-soft);color:var(--flat)}
+@media (max-width:760px){header.top{grid-template-columns:1fr}.ni{grid-template-columns:1fr}
+  .ev{grid-template-columns:56px minmax(0,1fr)}.ev-gold{grid-column:2;justify-self:start}}
 </style>
 </head>
 <body>
@@ -130,6 +148,12 @@ td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700
       <div class="tally" id="tally"></div>
     </div>
   </header>
+
+  <section>
+    <h2>今日の予定 <small>金が動きそうな指標・要人発言（日本時間）</small></h2>
+    <div class="ev-list" id="events"><div class="empty">読み込み中…</div></div>
+    <p class="foot" id="evFoot"></p>
+  </section>
 
   <section>
     <h2>今の地合い <small id="updated"></small></h2>
@@ -281,12 +305,40 @@ function renderNews(){
   }).join("");
 }
 
+const FLAG={US:"米",EU:"ユーロ圏",DE:"独",GB:"英",CN:"中"};
+const GOLD=["影響小","影響小","影響 中","影響 大"];
+function renderEvents(){
+  const ev=(D.events||[]).slice().sort((a,b)=>a.t.localeCompare(b.t));
+  if(!ev.length){ $("events").innerHTML=`<div class="empty">この先36時間に大きな予定はありません。</div>`; $("evFoot").textContent=""; return; }
+  const now=Date.now(); let nextMarked=false, day="", html="";
+  const W="日月火水木金土";
+  for(const e of ev){
+    const d=new Date(e.t), dk=`${d.getMonth()+1}/${d.getDate()}(${W[d.getDay()]})`;
+    if(dk!==day){ day=dk; html+=`<div class="ev-day">${dk}</div>`; }
+    const done=e.done||(+d<now-60*60*1000);
+    let cls="ev"+(done?" done":"");
+    if(!done&&!nextMarked&&e.timed&&+d>=now-30*60*1000){ cls+=" next"; nextMarked=true; }
+    const tm=e.timed?`${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`:"未定";
+    const name=e.name_ja||e.name;
+    const vals=[e.prev?`<span>前回 ${esc(e.prev)}</span>`:"",e.fc?`<span>予想 ${esc(e.fc)}</span>`:"",e.result?`<span>結果 <b>${esc(e.result)}</b></span>`:""].join("");
+    const g=Number.isFinite(e.gold)?e.gold:null;
+    html+=`<div class="${cls}"><div class="ev-time">${tm}<small>${esc(FLAG[e.country]||e.country)} ${"★".repeat(Math.min(5,e.imp||0))}</small></div>
+      <div class="ev-main"><div class="ev-name">${esc(name)}${done&&!e.result?' <span class="muted">（済）</span>':""}</div>
+        ${vals?`<div class="ev-vals">${vals}</div>`:""}
+        ${e.result_note?`<div class="ev-note res">${esc(e.result_note)}</div>`:""}
+        ${e.note?`<div class="ev-note">${esc(e.note)}</div>`:""}</div>
+      ${g!==null?`<span class="ev-gold g${g}">金 ${GOLD[g]}</span>`:"<span></span>"}</div>`;
+  }
+  $("events").innerHTML=html;
+  $("evFoot").innerHTML=`予定と結果の出典: <a href="https://fx.minkabu.jp/indicators" target="_blank" rel="noopener">みんかぶFX 経済指標カレンダー</a>・Forex Factory（要人発言）。一言は Claude の見方です。${D.eventsAt?" 取得 "+fmt(D.eventsAt):""}`;
+}
+
 async function load(){
   try{
     const r=await fetch("data.json?t="+Date.now(),{cache:"no-store"});
     if(!r.ok) throw new Error(r.status);
     D=await r.json(); META=D.meta||[]; FMAP=Object.fromEntries(META.map(m=>[m.id,m]));
-    renderTop(); renderFactors(); renderChart(); renderFilters(); renderNews();
+    renderTop(); renderEvents(); renderFactors(); renderChart(); renderFilters(); renderNews();
   }catch(e){
     $("sumText").textContent="データを読み込めませんでした。少し待ってから開き直してください。";
   }
