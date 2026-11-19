@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ゴールド材料ノート</title>
+<meta name="description" content="金(XAU/USD)の材料をニュースから30分ごとに見直す、個人の研究用ページ">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --sunk:#E9EBEF; --ink:#15181E; --muted:#5B626E; --line:#D9DDE4;
+  --gold:#9C7210; --gold-soft:#F3E7C6; --bull:#17804F; --bull-soft:#DDF1E6; --bear:#BC3A25; --bear-soft:#F8E0DA;
+  --flat:#707784; --flat-soft:#E6E8EC;
+  --f-display:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-body:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1216; --surface:#171B21; --sunk:#1F242C; --ink:#E7E9ED; --muted:#9AA1AC; --line:#2B313A;
+  --gold:#DDAE45; --gold-soft:#3A2F14; --bull:#43C487; --bull-soft:#14301F; --bear:#F2705A; --bear-soft:#3A1B16;
+  --flat:#9AA1AC; --flat-soft:#262B33; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1216; --surface:#171B21; --sunk:#1F242C; --ink:#E7E9ED; --muted:#9AA1AC; --line:#2B313A;
+  --gold:#DDAE45; --gold-soft:#3A2F14; --bull:#43C487; --bull-soft:#14301F; --bear:#F2705A; --bear-soft:#3A1B16;
+  --flat:#9AA1AC; --flat-soft:#262B33; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;
+  padding:28px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+h2{font-size:20px;font-weight:700;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2 small{font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--muted)}
+a{color:var(--gold)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+header.top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:end}
+.brand h1{font-size:clamp(30px,5vw,44px);font-weight:900;letter-spacing:.02em}
+.brand h1 .au{font-family:var(--f-mono);font-weight:600;font-size:.5em;color:var(--gold);border:1.5px solid var(--gold);
+  border-radius:4px;padding:0 .35em;margin-right:.4em;vertical-align:.35em}
+.brand p{margin:8px 0 0;color:var(--muted);max-width:56ch}
+.gauge{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.gauge-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.verdict{font-family:var(--f-display);font-weight:900;font-size:24px}
+.verdict.bull{color:var(--bull)} .verdict.bear{color:var(--bear)} .verdict.flat{color:var(--flat)}
+.meter{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,var(--bear-soft),var(--flat-soft) 50%,var(--bull-soft))}
+.meter::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line)}
+.needle{position:absolute;top:-5px;width:4px;height:22px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.tally{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.tally b{font-family:var(--f-mono);font-weight:600}
+.tally .b{color:var(--bull)} .tally .r{color:var(--bear)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.summary{border-left:4px solid var(--gold);display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.summary-text{white-space:pre-wrap;max-width:75ch}
+.outlook{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;border-top:1px solid var(--line);padding-top:12px}
+.ol{display:flex;flex-direction:column;gap:4px;font-size:14px;white-space:pre-wrap;min-width:0}
+
+.factors{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:16px}
+.fc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0;position:relative}
+.fc::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--flat-soft)}
+.fc.bull::before{background:var(--bull)} .fc.bear::before{background:var(--bear)}
+.fc-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.fc h3{font-size:16px;font-weight:700}
+.weight{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.05em}
+.pill{border-radius:4px;padding:0 8px;font-weight:700;font-size:12px;line-height:1.8;white-space:nowrap}
+.pill.bull{background:var(--bull-soft);color:var(--bull)}
+.pill.bear{background:var(--bear-soft);color:var(--bear)}
+.pill.flat{background:var(--flat-soft);color:var(--flat)}
+.rule{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px;margin:0}
+.rule dt{font-weight:700;white-space:nowrap}
+.rule dt.up{color:var(--bull)} .rule dt.dn{color:var(--bear)}
+.rule dd{margin:0;color:var(--muted)}
+.note{font-size:14px;border-top:1px solid var(--line);padding-top:8px}
+.changed{font-size:12px;color:var(--gold);font-weight:700}
+
+.chart-card{margin-top:16px;padding:16px 12px 10px}
+.chart-card svg{display:block;width:100%;height:auto}
+.chart-card .axis{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.chart-foot{font-size:12px;color:var(--muted);padding:6px 8px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:2px 11px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.chip.ib[aria-pressed="true"]{background:var(--bull);border-color:var(--bull)}
+.chip.ir[aria-pressed="true"]{background:var(--bear);border-color:var(--bear)}
+.filters{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.news-list{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ni{display:grid;grid-template-columns:92px minmax(0,1fr);gap:4px 16px;padding:14px 16px;border-top:1px solid var(--line)}
+.ni:first-child{border-top:0}
+.ni-date{font-family:var(--f-mono);font-size:13px;color:var(--muted);padding-top:2px}
+.ni-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ni-title{font-weight:700;line-height:1.5}
+.ni-sum{font-size:14px;color:var(--muted)}
+.ni-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
+.tag{border:1px solid var(--line);border-radius:4px;padding:0 6px;color:var(--muted)}
+.ni-src{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:14px}
+.more{display:block;margin:12px auto 0;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 16px;font-size:14px}
+
+.tbl-wrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-top:1px solid var(--line);vertical-align:top}
+thead th{border-top:0;font-size:12px;color:var(--muted);font-weight:700;background:var(--sunk)}
+td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700}
+.foot{font-size:12px;color:var(--muted);margin-top:8px}
+
+@media (max-width:760px){header.top{grid-template-columns:1fr}.ni{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">XAU/USD · Fundamentals</div>
+      <h1><span class="au">Au</span>ゴールド材料ノート</h1>
+      <p>金の値動きを決める10の材料を、Claude がニュースから30分ごとに見直しています（新しい記事がない回は見直しなし）。個人の研究用で、売買の助言ではありません。</p>
+    </div>
+    <div class="gauge" aria-live="polite">
+      <div class="gauge-head"><span class="eyebrow">総合判断（要因の重み付き）</span><span id="verdict" class="verdict flat">—</span></div>
+      <div class="meter" aria-hidden="true"><div id="needle" class="needle" style="left:50%"></div></div>
+      <div class="scale"><span>弱気（下げ材料が優勢）</span><span>強気（上げ材料が優勢）</span></div>
+      <div class="tally" id="tally"></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>今の地合い <small id="updated"></small></h2>
+    <div class="card summary">
+      <div id="sumText" class="summary-text">読み込み中…</div>
+      <div class="outlook">
+        <div class="ol"><span class="eyebrow">短期（数週間〜数カ月）</span><div id="olShort">—</div></div>
+        <div class="ol"><span class="eyebrow">中長期（1年以上）</span><div id="olLong">—</div></div>
+        <div class="ol"><span class="eyebrow">次の注目イベント</span><div id="olNext">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>要因ボード <small>重みは総合判断への効き方（●の数）</small></h2>
+    <div class="factors" id="factors"></div>
+  </section>
+
+  <section>
+    <h2>スコアの推移 <small>+20 が全部強気、−20 が全部弱気</small></h2>
+    <div class="card chart-card"><div id="chart"></div><div class="chart-foot" id="chartFoot"></div></div>
+  </section>
+
+  <section>
+    <h2>ニュース帳 <small id="newsCount"></small></h2>
+    <div class="filters"><div class="chips" id="fltImpact"></div><div class="chips" id="fltFactor"></div></div>
+    <div class="news-list" id="newsList"><div class="empty">読み込み中…</div></div>
+    <button class="more" id="more" hidden>もっと見る</button>
+  </section>
+
+  <section>
+    <h2>指標の読み方 <small>結果が予想より強い（上振れ）ときの金の反応の目安</small></h2>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>指標・イベント</th><th>時期（日本時間）</th><th>上振れ時</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td>米雇用統計（NFP・失業率）</td><td class="num">毎月第1金曜 22:30（冬）</td><td class="dn">金↓</td><td>景気が強い → 利下げが遠のく／利上げ観測 → ドル高・金利高</td></tr>
+        <tr><td>米CPI（消費者物価）</td><td class="num">毎月中旬 22:30（冬）</td><td class="dn">金↓</td><td>短期は利上げ観測が勝つ。インフレヘッジの買いは長い目で効く</td></tr>
+        <tr><td>米PCEデフレーター</td><td class="num">毎月下旬 22:30（冬）</td><td class="dn">金↓</td><td>FRBが一番重視する物価。CPIと同じ向き</td></tr>
+        <tr><td>FOMC（政策金利・声明・ドットチャート）</td><td class="num">年8回 翌4:00（冬）</td><td class="dn">タカ派なら金↓</td><td>利上げ・据え置き長期化は実質金利を押し上げる</td></tr>
+        <tr><td>FOMC議事要旨</td><td class="num">会合の3週間後 翌4:00</td><td class="dn">タカ派なら金↓</td><td>次の会合の地ならしとして読まれる</td></tr>
+        <tr><td>ISM製造業・非製造業</td><td class="num">月初 24:00（冬）</td><td class="dn">金↓</td><td>景気指標。価格指数が高いとインフレ懸念で利上げ観測</td></tr>
+        <tr><td>新規失業保険申請件数</td><td class="num">毎週木曜 22:30（冬）</td><td class="up">件数増で金↑</td><td>雇用の悪化 → 利下げ観測</td></tr>
+        <tr><td>米10年債入札・実質金利（TIPS）</td><td class="num">随時</td><td class="dn">利回り上昇で金↓</td><td>金は利息を生まないので、持つコストが上がる</td></tr>
+        <tr><td>WGC 四半期需給レポート</td><td class="num">各四半期の翌月末</td><td class="up">中銀購入増で金↑</td><td>中銀・ETF・宝飾の需要を確認できる</td></tr>
+        <tr><td>中国人民銀行の金準備</td><td class="num">毎月7日ごろ</td><td class="up">買い増しで金↑</td><td>中銀買いの代表。買い止めは弱気材料</td></tr>
+        <tr><td>CFTC建玉（COT）</td><td class="num">毎週土曜 早朝</td><td>—</td><td>投機筋の買い越しが極端だと反落しやすい</td></tr>
+      </tbody>
+    </table></div>
+    <p class="foot">夏時間（3月中旬〜11月上旬）は米国の発表が1時間早まります。反応の向きは目安で、相場が何を材料視しているかで変わります。</p>
+  </section>
+</div>
+
+<script>
+const ST = {bull:{label:"強気",cls:"bull"}, neutral:{label:"中立",cls:"flat"}, bear:{label:"弱気",cls:"bear"}};
+const IMP = {bull:"上げ材料", neutral:"中立", bear:"下げ材料"};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = iso => { const d=new Date(iso); if(isNaN(d)) return ""; return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
+let D=null, META=[], FMAP={}, fltImpact="all", fltFactor="all", shown=30;
+
+function verdictOf(score,max){ const r=max?score/max:0;
+  return [r, r>=0.35?["強気","bull"]:r>=0.1?["やや強気","bull"]:r<=-0.35?["弱気","bear"]:r<=-0.1?["やや弱気","bear"]:["中立","flat"]]; }
+
+function renderTop(){
+  let score=0,max=0,nb=0,nr=0,nn=0;
+  for(const m of META){ const s=D.factors[m.id]?.stance; max+=m.w;
+    if(s==="bull"){score+=m.w;nb++;} else if(s==="bear"){score-=m.w;nr++;} else nn++; }
+  const [r,[label,cls]] = verdictOf(score,max);
+  $("needle").style.left=(50+r*50)+"%";
+  $("verdict").textContent=label; $("verdict").className="verdict "+cls;
+  $("tally").innerHTML=`<span>強気 <b class="b">${nb}</b></span><span>中立 <b>${nn}</b></span><span>弱気 <b class="r">${nr}</b></span><span>スコア <b class="num">${score>0?"+":""}${score} / ±${max}</b></span>`;
+  const s=D.summary||{};
+  $("updated").textContent = D.updatedAt ? "更新 "+fmt(D.updatedAt) : "";
+  $("sumText").textContent = s.text || "まだまとめがありません。";
+  $("olShort").textContent = s.outlookShort || "—";
+  $("olLong").textContent = s.outlookLong || "—";
+  $("olNext").textContent = s.next || "—";
+}
+
+function lastChange(id){
+  const h=D.history||[];
+  for(let i=h.length-1;i>=0;i--){ if(h[i].changed && h[i].changed[id]) return h[i]; }
+  return null;
+}
+function renderFactors(){
+  $("factors").innerHTML = META.map(m=>{
+    const f=D.factors[m.id]||{}, s=ST[f.stance]||ST.neutral, ch=lastChange(m.id);
+    const chTxt = ch ? `${fmt(ch.t)} に ${ch.changed[m.id].split("→").map(x=>ST[x]?.label||x).join(" → ")}` : "";
+    return `<article class="fc ${s.cls}">
+      <div class="fc-head"><div><h3>${esc(m.name)}</h3><div class="weight">重み ${"●".repeat(m.w)}${"○".repeat(3-m.w)}</div></div>
+      <span class="pill ${s.cls}">${s.label}</span></div>
+      <dl class="rule"><dt class="up">金↑</dt><dd>${esc(m.up)}</dd><dt class="dn">金↓</dt><dd>${esc(m.dn)}</dd></dl>
+      <div class="note">${esc(f.note||"")}</div>
+      ${chTxt?`<div class="changed">${esc(chTxt)}</div>`:""}
+    </article>`;
+  }).join("");
+}
+
+function renderChart(){
+  const h=(D.history||[]).filter(x=>!isNaN(new Date(x.t)));
+  if(h.length<2){ $("chart").innerHTML=`<div class="empty">記録が2回分たまると表示します。</div>`; $("chartFoot").textContent=""; return; }
+  const W=1000,H=240,L=40,R=12,T=12,B=28;
+  const t0=+new Date(h[0].t), t1=Math.max(+new Date(h[h.length-1].t), Date.now()), span=Math.max(1,t1-t0);
+  const x=t=>L+(W-L-R)*((+new Date(t))-t0)/span, y=v=>T+(H-T-B)*(20-v)/40;
+  let path=`M${x(h[0].t).toFixed(1)},${y(h[0].score).toFixed(1)}`;
+  for(let i=1;i<h.length;i++){ path+=`H${x(h[i].t).toFixed(1)}V${y(h[i].score).toFixed(1)}`; }
+  path+=`H${(W-R).toFixed(1)}`;
+  const grid=[20,10,0,-10,-20].map(v=>`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" ${v===0?'':'stroke-dasharray="3 4"'}/><text class="axis" x="${L-6}" y="${y(v)+4}" text-anchor="end">${v>0?"+":""}${v}</text>`).join("");
+  const days=[]; const d=new Date(t0); d.setHours(0,0,0,0); d.setDate(d.getDate()+1);
+  const stepDays=Math.max(1,Math.ceil(span/864e5/8));
+  for(;+d<=t1;d.setDate(d.getDate()+stepDays)) days.push(new Date(d));
+  const ticks=days.map(dd=>`<text class="axis" x="${x(dd)}" y="${H-8}" text-anchor="middle">${dd.getMonth()+1}/${dd.getDate()}</text>`).join("");
+  const dots=h.filter(p=>p.changed&&Object.keys(p.changed).length).map(p=>`<circle cx="${x(p.t)}" cy="${y(p.score)}" r="4" fill="var(--gold)"><title>${fmt(p.t)} スコア ${p.score}\n${Object.entries(p.changed).map(([k,v])=>(FMAP[k]?.name||k)+": "+v.split("→").map(z=>ST[z]?.label||z).join("→")).join("\n")}</title></circle>`).join("");
+  const last=h[h.length-1];
+  $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="総合スコアの推移。最新は ${last.score}">
+    <rect x="${L}" y="${T}" width="${W-L-R}" height="${(H-T-B)/2}" fill="var(--bull-soft)" opacity=".45"/>
+    <rect x="${L}" y="${y(0)}" width="${W-L-R}" height="${(H-T-B)/2}" fill="var(--bear-soft)" opacity=".45"/>
+    ${grid}${ticks}<path d="${path}" fill="none" stroke="var(--ink)" stroke-width="2"/>${dots}</svg>`;
+  $("chartFoot").textContent=`見直し ${h.length}回。金色の点は判断が変わった回（点に触れると中身が出ます）。`;
+}
+
+function renderFilters(){
+  const imp=[["all","すべて"],["bull","上げ材料"],["bear","下げ材料"],["neutral","中立"]];
+  $("fltImpact").innerHTML=imp.map(([k,l])=>`<button class="chip ${k==="bull"?"ib":k==="bear"?"ir":""}" data-imp="${k}" aria-pressed="${fltImpact===k}">${l}</button>`).join("");
+  $("fltFactor").innerHTML=`<button class="chip" data-fac="all" aria-pressed="${fltFactor==="all"}">全要因</button>`+
+    META.map(m=>`<button class="chip" data-fac="${m.id}" aria-pressed="${fltFactor===m.id}">${esc(m.name)}</button>`).join("");
+}
+$("fltImpact").addEventListener("click",e=>{const b=e.target.closest("[data-imp]");if(!b)return;fltImpact=b.dataset.imp;shown=30;renderFilters();renderNews();});
+$("fltFactor").addEventListener("click",e=>{const b=e.target.closest("[data-fac]");if(!b)return;fltFactor=b.dataset.fac;shown=30;renderFilters();renderNews();});
+$("more").addEventListener("click",()=>{shown+=30;renderNews();});
+
+function renderNews(){
+  const all=D.news||[];
+  const list=all.filter(n=>(fltImpact==="all"||n.impact===fltImpact)&&(fltFactor==="all"||(n.factors||[]).includes(fltFactor)));
+  $("newsCount").textContent=all.length?`${all.length}件（Claude が選んだ記事）`:"";
+  $("more").hidden=list.length<=shown;
+  if(!list.length){ $("newsList").innerHTML=`<div class="empty">${all.length?"この条件のニュースはありません。":"まだニュースがありません。"}</div>`; return; }
+  $("newsList").innerHTML=list.slice(0,shown).map(n=>{
+    const cls=n.impact==="bull"?"bull":n.impact==="bear"?"bear":"flat";
+    const arrows=n.impact==="neutral"?"":(n.impact==="bull"?"↑":"↓").repeat(Math.max(1,Math.min(3,+n.strength||1)));
+    const url=/^https?:\/\//.test(n.url||"")?n.url:"";
+    return `<article class="ni"><div class="ni-date">${esc(n.date||"")}</div><div class="ni-main">
+      <div class="ni-title">${esc(n.title||"")}</div>
+      ${n.summary?`<div class="ni-sum">${esc(n.summary)}</div>`:""}
+      <div class="ni-tags"><span class="pill ${cls}">${IMP[n.impact]||"中立"} ${arrows}</span>
+        ${(n.factors||[]).filter(id=>FMAP[id]).map(id=>`<span class="tag">${esc(FMAP[id].name)}</span>`).join("")}</div>
+      <div class="ni-src">${esc(n.source||"")}${url?` · <a href="${esc(url)}" target="_blank" rel="noopener">記事を開く</a>`:""}</div>
+    </div></article>`;
+  }).join("");
+}
+
+async function load(){
+  try{
+    const r=await fetch("data.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw new Error(r.status);
+    D=await r.json(); META=D.meta||[]; FMAP=Object.fromEntries(META.map(m=>[m.id,m]));
+    renderTop(); renderFactors(); renderChart(); renderFilters(); renderNews();
+  }catch(e){
+    $("sumText").textContent="データを読み込めませんでした。少し待ってから開き直してください。";
+  }
+}
+load();
+setInterval(load, 10*60*1000);
+</script>
+</body>
+</html>
