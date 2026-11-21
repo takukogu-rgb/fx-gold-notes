@@ -172,13 +172,15 @@
         const XX = ms => X(Math.min(Math.max(ms, t0), t1));
         const v0 = Y10.v[0], v1 = Y10.v[Y10.v.length - 1], bp = Math.round((v1 - v0) * 100);
         g += `<text x="${m.l}" y="${top - 10}" font-size="12.5" fill="var(--ink)"><tspan font-weight="700">米10年債利回り</tspan><tspan fill="var(--muted)">　上がると金に逆風</tspan></text>`;
-        const st = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5, 1].find(s => (b - a) / s <= 3) || 2;
+        const st = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5, 1].find(s => (b - a) / s <= 4) || 2;
         for (let v = Math.ceil(a / st) * st; v <= b; v += st) {
           const y = YY(v).toFixed(1);
           g += `<line x1="${m.l}" x2="${m.l + iw}" y1="${y}" y2="${y}" stroke="var(--st-grid)"/>`;
           g += `<text x="${m.l - 8}" y="${+y + 4}" text-anchor="end" font-size="11" fill="var(--muted)" class="num">${v.toFixed(2)}</text>`;
         }
-        const d = Y10.v.map((v, i) => `${i ? "L" : "M"}${XX(Y10.t[i]).toFixed(1)},${YY(v).toFixed(1)}`).join("");
+        // 値が出ていない間（米国の休み）は前の値のまま横ばいで描く
+        const d = Y10.v.map((v, i) => i ? `L${XX(Y10.t[i]).toFixed(1)},${YY(Y10.v[i - 1]).toFixed(1)}L${XX(Y10.t[i]).toFixed(1)},${YY(v).toFixed(1)}`
+                                         : `M${XX(Y10.t[0]).toFixed(1)},${YY(v).toFixed(1)}`).join("");
         g += `<path d="${d}" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-linejoin="round"/>`;
         const ex = XX(Y10.t[Y10.t.length - 1]);
         g += `<circle cx="${ex}" cy="${YY(v1).toFixed(1)}" r="3.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>`;
