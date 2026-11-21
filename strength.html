@@ -80,7 +80,7 @@ td.n,th.n{text-align:right}
     <div>
       <div class="eyebrow">Strength</div>
       <h1>強弱チャート</h1>
-      <p>金・ドル・円・ユーロ・原油のどれが強く、どれが弱いか。期間の初めをゼロにして、5つの平均より上なら強い、下なら弱い。値は MT5 から10分ごとに更新。</p>
+      <p>金・ドル・円・ユーロ・原油のどれが強く、どれが弱いか。期間の初めをゼロにして、5つの平均より上なら強い、下なら弱い。値は MT5 から6分ごとに更新。</p>
     </div>
     <nav class="nav"><a href="./">ゴールド材料ノート</a><a href="markets.html">相場ボード</a></nav>
   </header>
@@ -282,7 +282,7 @@ async function load(){
   }
 }
 load();
-setInterval(load, 5 * 60e3);
+setInterval(load, 2 * 60e3);
 let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => DATA && render(), 150); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => DATA && render());
 </script>
