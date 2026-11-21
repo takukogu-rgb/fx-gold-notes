@@ -121,9 +121,12 @@
       $(".legend").innerHTML = ORDER.map(k => `<span><i style="background:var(--s-${k})"></i>${esc(name(k))}</span>`).join("");
 
       const box = $(".chart");
-      const W = Math.max(300, box.clientWidth), H = W < 600 ? 280 : 360;
+      const W = Math.max(300, box.clientWidth), MH = W < 600 ? 280 : 360;
+      const Y10 = P.y10 && P.y10.t.length > 1 ? P.y10 : null, PH = W < 600 ? 90 : 110;
+      const H = MH + (Y10 ? PH + 34 : 0);
       const m = { l: 40, r: W < 600 ? 84 : 110, t: 10, b: 26 };
-      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+      const iw = W - m.l - m.r, ih = MH - m.t - m.b;
+      const hitBot = Y10 ? H - 8 : m.t + ih;
       let lo = 0, hi = 0;
       ORDER.forEach(k => S[k].forEach(v => { if (v < lo) lo = v; if (v > hi) hi = v; }));
       const pad = (hi - lo) * 0.06 || 0.5; lo -= pad; hi += pad;
@@ -142,7 +145,7 @@
       xTicks(P).filter(([ms]) => { const x = X(ms); if (x - lastX < 46) return false; lastX = x; return true; }).forEach(([ms, lab]) => {
         const x = X(ms).toFixed(1);
         g += `<line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--st-grid)"/>`;
-        g += `<text x="${x}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--muted)">${lab}</text>`;
+        g += `<text x="${x}" y="${MH - 6}" text-anchor="middle" font-size="11" fill="var(--muted)">${lab}</text>`;
       });
       ORDER.forEach(k => {
         const d = S[k].map((v, i) => `${i ? "L" : "M"}${X(P.t[i]).toFixed(1)},${Y(v).toFixed(1)}`).join("");
@@ -159,8 +162,31 @@
         g += `<circle cx="${x}" cy="${Y(e.v).toFixed(1)}" r="4" fill="var(--s-${e.k})" stroke="var(--surface)" stroke-width="2"/>`;
         g += `<text x="${x + 10}" y="${(e.y + 4).toFixed(1)}" font-size="12" fill="var(--ink)"><tspan font-weight="700">${esc(name(e.k))}</tspan> <tspan class="num" fill="var(--muted)">${fmt(e.v)}</tspan></text>`;
       });
-      g += `<line class="xh" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--st-faint)" stroke-dasharray="3 3" visibility="hidden"/><g class="dots"></g>`;
-      g += `<rect class="hit" x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/>`;
+      // 米10年債利回り（別の目盛りの小さいグラフ。時間の軸は上と同じ）
+      let yAt = null;
+      if (Y10) {
+        const top = MH + 30, bot = H - 8;
+        let a = Math.min(...Y10.v), b = Math.max(...Y10.v);
+        const pd = (b - a) * 0.12 || 0.02; a -= pd; b += pd;
+        const YY = v => top + (b - v) / (b - a) * (bot - top);
+        const XX = ms => X(Math.min(Math.max(ms, t0), t1));
+        const v0 = Y10.v[0], v1 = Y10.v[Y10.v.length - 1], bp = Math.round((v1 - v0) * 100);
+        g += `<text x="${m.l}" y="${top - 10}" font-size="12.5" fill="var(--ink)"><tspan font-weight="700">米10年債利回り</tspan><tspan fill="var(--muted)">　上がると金に逆風</tspan></text>`;
+        const st = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5, 1].find(s => (b - a) / s <= 3) || 2;
+        for (let v = Math.ceil(a / st) * st; v <= b; v += st) {
+          const y = YY(v).toFixed(1);
+          g += `<line x1="${m.l}" x2="${m.l + iw}" y1="${y}" y2="${y}" stroke="var(--st-grid)"/>`;
+          g += `<text x="${m.l - 8}" y="${+y + 4}" text-anchor="end" font-size="11" fill="var(--muted)" class="num">${v.toFixed(2)}</text>`;
+        }
+        const d = Y10.v.map((v, i) => `${i ? "L" : "M"}${XX(Y10.t[i]).toFixed(1)},${YY(v).toFixed(1)}`).join("");
+        g += `<path d="${d}" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-linejoin="round"/>`;
+        const ex = XX(Y10.t[Y10.t.length - 1]);
+        g += `<circle cx="${ex}" cy="${YY(v1).toFixed(1)}" r="3.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>`;
+        g += `<text x="${m.l + iw + 10}" y="${(YY(v1) + 4).toFixed(1)}" font-size="12" fill="var(--ink)"><tspan class="num" font-weight="700">${v1.toFixed(2)}%</tspan> <tspan class="num" fill="var(--muted)">${bp > 0 ? "+" : bp < 0 ? "−" : "±"}${Math.abs(bp)}bp</tspan></text>`;
+        yAt = ms => { let j = -1; for (let k = 0; k < Y10.t.length && Y10.t[k] <= ms; k++) j = k; return j < 0 ? null : Y10.v[j]; };
+      }
+      g += `<line class="xh" x1="0" x2="0" y1="${m.t}" y2="${hitBot}" stroke="var(--st-faint)" stroke-dasharray="3 3" visibility="hidden"/><g class="dots"></g>`;
+      g += `<rect class="hit" x="${m.l}" y="${m.t}" width="${iw}" height="${hitBot - m.t}" fill="transparent"/>`;
       box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="強さの推移（${P.label}）">${g}</svg><div class="tip"></div>`;
 
       const svg = box.querySelector("svg"), tip = box.querySelector(".tip"), xh = svg.querySelector(".xh"), dots = svg.querySelector(".dots");
@@ -173,7 +199,8 @@
         xh.setAttribute("x1", x); xh.setAttribute("x2", x); xh.setAttribute("visibility", "visible");
         dots.innerHTML = ORDER.map(k => `<circle cx="${x}" cy="${Y(S[k][i])}" r="4" fill="var(--s-${k})" stroke="var(--surface)" stroke-width="2"/>`).join("");
         tip.innerHTML = `<div class="h">${jst(P.t[i], true)}</div>` + ORDER.map(k => [k, S[k][i]]).sort((p, q) => q[1] - p[1]).map(([k, v]) =>
-          `<div class="r"><i style="background:var(--s-${k})"></i><span>${esc(name(k))}</span><span class="num">${fmt(v)}</span></div>`).join("");
+          `<div class="r"><i style="background:var(--s-${k})"></i><span>${esc(name(k))}</span><span class="num">${fmt(v)}</span></div>`).join("")
+          + (yAt && yAt(P.t[i]) != null ? `<div class="r" style="margin-top:4px;border-top:1px solid var(--line);padding-top:4px"><i style="background:var(--ink)"></i><span>米10年</span><span class="num">${yAt(P.t[i]).toFixed(3)}%</span></div>` : "");
         tip.style.display = "block";
         const px = x * r.width / W, tw = tip.offsetWidth;
         tip.style.left = (px + 14 + tw > r.width ? px - tw - 14 : px + 14) + "px";
