@@ -122,7 +122,7 @@
 
       const box = $(".chart");
       const W = Math.max(300, box.clientWidth), MH = W < 600 ? 280 : 360;
-      const Y10 = P.y10 && P.y10.t.length > 1 ? P.y10 : null, PH = W < 600 ? 90 : 110;
+      const Y10 = P.y10 && P.y10.t.length >= 1 ? P.y10 : null, PH = W < 600 ? 90 : 110;
       const H = MH + (Y10 ? PH + 34 : 0);
       const m = { l: 40, r: W < 600 ? 84 : 110, t: 10, b: 26 };
       const iw = W - m.l - m.r, ih = MH - m.t - m.b;
