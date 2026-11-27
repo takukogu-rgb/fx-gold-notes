@@ -134,7 +134,7 @@ td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700
 .ol-box{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-width:620px}
 .ol-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 .ol-meta{font-size:12.5px;color:var(--muted)}
-.ol-row{display:grid;grid-template-columns:64px 92px minmax(0,1fr);gap:10px;align-items:baseline;font-size:14px}
+.ol-row{display:grid;grid-template-columns:64px 128px minmax(0,1fr);gap:10px;align-items:baseline;font-size:14px}
 .ol-h{font-size:12.5px;color:var(--muted);font-weight:700}
 .ol-dir{font-family:var(--f-display);font-weight:900;font-size:17px;white-space:nowrap}
 .ol-dir.up{color:var(--bull)} .ol-dir.down{color:var(--bear)} .ol-dir.flat{color:var(--flat)}
@@ -401,17 +401,19 @@ async function loadOutlook(){
     const dots=n=>"●".repeat(n)+"○".repeat(3-n);
     if(!c){ $("olMeta").textContent="まだ見解がありません"; return; }
     const age=(Date.now()-new Date(c.t))/6e4;
-    $("olMeta").textContent=`${fmt(c.t)} 時点・金 ${(+c.price).toFixed(2)}`+(!O.open?"・休場中（最後の見解）":age>50?"・少し古い見解":"");
+    const trig=c.trigger&&c.trigger!=="定時"?`・${c.trigger}で更新`:"";
+    $("olMeta").textContent=`${fmt(c.t)} 時点・金 ${(+c.price).toFixed(2)}${trig}`+(!O.open?"・休場中（最後の見解）":age>50?"・少し古い見解":"");
     $("olRows").innerHTML=[["h1","1時間後"],["h4","4時間後"]].map(([k,lab])=>{const x=c[k],a=AR[x.dir]||AR.flat;
       return `<div class="ol-row"><span class="ol-h">${lab}</span><span class="ol-dir ${a[1]}">${a[0]}<span class="ol-conf" title="自信（3段階）">${dots(x.conf)}</span></span><span class="ol-why">${esc(x.why)}</span></div>`}).join("");
     const lv=c.levels||{}, f=v=>(+v).toFixed(1);
     const st=O.stats||{}, rate=s=>s&&s.n?`${s.hit}/${s.n}（${Math.round(s.hit/s.n*100)}%）`:"まだなし";
     $("olFoot").innerHTML=
       ((lv.resistance||[]).length||(lv.support||[]).length?`見るところ：上 <b class="num">${(lv.resistance||[]).map(f).join(" / ")||"—"}</b>・下 <b class="num">${(lv.support||[]).map(f).join(" / ")||"—"}</b><br>`:"")+
+      ((c.fresh||[]).length?`反映した材料：${(c.fresh||[]).slice(0,3).map(esc).join(" / ")}<br>`:"")+
       (c.note?`注意：${esc(c.note)}<br>`:"")+
       `これまでの当たり：1時間後 <b class="num">${rate(st.h1)}</b>・4時間後 <b class="num">${rate(st.h4)}</b>
 <br>（上・下は向きが合えば、横ばいは1時間後±${O.flat?.h1??0.1}%・4時間後±${O.flat?.h4??0.2}%以内なら当たり）<br>
-       Claude が値動き・強弱・金利・予定から30分ごとに出す見解。実験中で、売買のすすめではありません。`;
+       Claude が値動き・強弱・金利・予定から出す見解（30分ごと。要人発言などの新しい材料や急な値動きがあれば、6分ごとの確認ですぐ出し直す）。実験中で、売買のすすめではありません。`;
   }catch(e){ $("olMeta").textContent="見解を読み込めませんでした"; }
 }
 loadOutlook(); setInterval(loadOutlook, 2*60*1000);
