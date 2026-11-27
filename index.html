@@ -131,6 +131,18 @@ td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700
 .g1,.g0{background:var(--flat-soft);color:var(--flat)}
 @media (max-width:760px){header.top{grid-template-columns:1fr}.ni{grid-template-columns:1fr}
   .ev{grid-template-columns:56px minmax(0,1fr)}.ev-gold{grid-column:2;justify-self:start}}
+.ol-box{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-width:620px}
+.ol-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ol-meta{font-size:12.5px;color:var(--muted)}
+.ol-row{display:grid;grid-template-columns:64px 92px minmax(0,1fr);gap:10px;align-items:baseline;font-size:14px}
+.ol-h{font-size:12.5px;color:var(--muted);font-weight:700}
+.ol-dir{font-family:var(--f-display);font-weight:900;font-size:17px;white-space:nowrap}
+.ol-dir.up{color:var(--bull)} .ol-dir.down{color:var(--bear)} .ol-dir.flat{color:var(--flat)}
+.ol-conf{font-size:11px;color:var(--muted);font-family:var(--f-body);font-weight:500;margin-left:4px}
+.ol-why{color:var(--ink);line-height:1.55}
+.ol-foot{font-size:12.5px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:8px}
+.ol-foot b{color:var(--ink);font-weight:600}
+@media (max-width:520px){.ol-row{grid-template-columns:56px minmax(0,1fr)}.ol-why{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -141,6 +153,7 @@ td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700
       <h1><span class="au">Au</span>ゴールド材料ノート</h1>
       <p>金の値動きを決める10の材料を、Claude がニュースから30分ごとに見直しています（新しい記事がない回は見直しなし）。個人の研究用で、売買の助言ではありません。</p>
       <p style="display:flex;gap:18px;flex-wrap:wrap"><a href="markets.html" style="font-weight:700">→ 相場ボード（リアルタイムのチャート）</a></p>
+      <div class="ol-box" id="olbox" aria-live="polite"><div class="ol-head"><span class="eyebrow">超短期の見解</span><span class="ol-meta" id="olMeta">読み込み中…</span></div><div id="olRows"></div><div class="ol-foot" id="olFoot"></div></div>
     </div>
     <div class="gauge" aria-live="polite">
       <div class="gauge-head"><span class="eyebrow">総合判断（要因の重み付き）</span><span id="verdict" class="verdict flat">—</span></div>
@@ -378,6 +391,30 @@ async function load(){
 }
 load();
 setInterval(load, 10*60*1000);
+
+// 超短期の見解（outlook.json、gold_outlook.py が30分ごと）
+async function loadOutlook(){
+  try{
+    const r=await fetch("outlook.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) throw 0;
+    const O=await r.json(), c=O.current;
+    const AR={up:["↑ 上","up"],down:["↓ 下","down"],flat:["→ 横ばい","flat"]};
+    const dots=n=>"●".repeat(n)+"○".repeat(3-n);
+    if(!c){ $("olMeta").textContent="まだ見解がありません"; return; }
+    const age=(Date.now()-new Date(c.t))/6e4;
+    $("olMeta").textContent=`${fmt(c.t)} 時点・金 ${(+c.price).toFixed(2)}`+(!O.open?"・休場中（最後の見解）":age>50?"・少し古い見解":"");
+    $("olRows").innerHTML=[["h1","1時間後"],["h4","4時間後"]].map(([k,lab])=>{const x=c[k],a=AR[x.dir]||AR.flat;
+      return `<div class="ol-row"><span class="ol-h">${lab}</span><span class="ol-dir ${a[1]}">${a[0]}<span class="ol-conf" title="自信（3段階）">${dots(x.conf)}</span></span><span class="ol-why">${esc(x.why)}</span></div>`}).join("");
+    const lv=c.levels||{}, f=v=>(+v).toFixed(1);
+    const st=O.stats||{}, rate=s=>s&&s.n?`${s.hit}/${s.n}（${Math.round(s.hit/s.n*100)}%）`:"まだなし";
+    $("olFoot").innerHTML=
+      ((lv.resistance||[]).length||(lv.support||[]).length?`見るところ：上 <b class="num">${(lv.resistance||[]).map(f).join(" / ")||"—"}</b>・下 <b class="num">${(lv.support||[]).map(f).join(" / ")||"—"}</b><br>`:"")+
+      (c.note?`注意：${esc(c.note)}<br>`:"")+
+      `これまでの当たり：1時間後 <b class="num">${rate(st.h1)}</b>・4時間後 <b class="num">${rate(st.h4)}</b>
+<br>（上・下は向きが合えば、横ばいは1時間後±${O.flat?.h1??0.1}%・4時間後±${O.flat?.h4??0.2}%以内なら当たり）<br>
+       Claude が値動き・強弱・金利・予定から30分ごとに出す見解。実験中で、売買のすすめではありません。`;
+  }catch(e){ $("olMeta").textContent="見解を読み込めませんでした"; }
+}
+loadOutlook(); setInterval(loadOutlook, 2*60*1000);
 </script>
 <script src="strength.js?v=8f7a0735"></script>
 <script>StrengthChart(document.getElementById("st"), { rank: false });</script>
