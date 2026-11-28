@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>見解の履歴</title>
+<meta name="description" content="ゴールドの超短期の見解（1時間後・4時間後）と、その後の結果の一覧。個人の研究用ページ">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --sunk:#E9EBEF; --ink:#15181E; --muted:#5B626E; --faint:#8A919C; --line:#D9DDE4;
+  --gold:#9C7210; --up:#17804F; --dn:#BC3A25;
+  --f-display:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-body:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1216; --surface:#171B21; --sunk:#1F242C; --ink:#E7E9ED; --muted:#9AA1AC; --faint:#6F7782; --line:#2B313A;
+  --gold:#DDAE45; --up:#43C487; --dn:#F2705A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1216; --surface:#171B21; --sunk:#1F242C; --ink:#E7E9ED; --muted:#9AA1AC; --faint:#6F7782; --line:#2B313A;
+  --gold:#DDAE45; --up:#43C487; --dn:#F2705A; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;
+  padding:28px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-family:var(--f-display);margin:0;line-height:1.3;font-size:clamp(28px,5vw,40px);font-weight:900}
+a{color:var(--gold)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+header p{margin:6px 0 0;color:var(--muted);max-width:66ch}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav a{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 14px;text-decoration:none;font-weight:700;font-size:14px}
+.controls{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--muted)}
+.segs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.segs button{border:0;background:none;padding:5px 14px;font-weight:700;font-size:13.5px;border-right:1px solid var(--line)}
+.segs button:last-child{border-right:0}
+.segs button[aria-pressed="true"]{background:var(--gold);color:var(--bg)}
+.sum{font-size:14px;color:var(--muted)} .sum b{color:var(--ink)}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:96px 78px 120px minmax(0,1fr) 128px;gap:12px;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.row:last-child{border-bottom:0}
+.row.head{font-size:12px;color:var(--muted);background:var(--sunk);padding-top:7px;padding-bottom:7px}
+.t{font-family:var(--f-mono);font-size:13px}
+.trig{display:block;font-size:11.5px;color:var(--faint);font-family:var(--f-body)}
+.dir{font-weight:700;white-space:nowrap}
+.dir.up{color:var(--up)} .dir.down{color:var(--dn)} .dir.flat{color:var(--muted)}
+.p{font-family:var(--f-mono);margin-left:6px;color:var(--ink)}
+.why{color:var(--ink);line-height:1.55}
+.fresh{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.res{white-space:nowrap;font-family:var(--f-mono);font-size:13.5px}
+.mk{display:inline-block;min-width:3.2em;font-family:var(--f-body);font-weight:700;font-size:12.5px;border-radius:5px;padding:0 6px;text-align:center;margin-right:6px}
+.mk.ok{background:color-mix(in srgb,var(--up) 18%,transparent);color:var(--up)}
+.mk.ng{background:color-mix(in srgb,var(--dn) 16%,transparent);color:var(--dn)}
+.mk.wait{background:var(--sunk);color:var(--muted)}
+.old{opacity:.6}
+.more{align-self:center;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 18px;font-weight:700}
+.note{font-size:13.5px;color:var(--muted);line-height:1.8}
+@media (max-width:720px){
+  .row{grid-template-columns:auto 1fr auto;gap:4px 10px}
+  .row.head{display:none}
+  .row .px{text-align:right}
+  .row .dir{grid-column:1}
+  .row .res{grid-column:2/-1;text-align:right}
+  .row .why{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Outlook log</div>
+      <h1>見解の履歴</h1>
+      <p>Claude が出した超短期の見解（買い・売りと、その向きになる確率）と、実際にどうなったかの一覧。新しい順。</p>
+    </div>
+    <nav class="nav"><a href="./">ゴールド材料ノート</a><a href="markets.html">相場ボード</a><a href="strength.html">強弱チャート</a></nav>
+  </header>
+
+  <div class="controls">
+    <span>見る先</span>
+    <div class="segs" id="hz"><button data-v="h1" aria-pressed="true">1時間後</button><button data-v="h4" aria-pressed="false">4時間後</button></div>
+    <span>自信</span>
+    <div class="segs" id="cf"><button data-v="0" aria-pressed="true">全部</button><button data-v="60" aria-pressed="false">60%以上</button><button data-v="70" aria-pressed="false">70%以上</button></div>
+  </div>
+  <div class="sum" id="sum">読み込み中…</div>
+
+  <div class="list" id="list"></div>
+  <button class="more" id="more" hidden></button>
+
+  <section class="note">
+    <p><b>当たりの決め方</b>　見解を出したときの金の価格と、1時間後（4時間後）の価格を比べて、向きが合えば当たり。その時刻が休場中なら、休場前の最後の価格で比べます。
+      結果の % は、見解の向きにそろえた値動きです（プラス＝見解どおりに動いた）。</p>
+    <p><b>11/28 未明までの見解</b>は「上・下・横ばい／自信3段階」の古い形で、薄く表示しています（横ばいは±0.1%・4時間後±0.2%以内なら当たり）。集計には入れていません。</p>
+    <p>実験中の記録で、売買のすすめではありません。</p>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = iso => { const d=new Date(iso); if(isNaN(d)) return ""; return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
+const AR = {up:["↑ 買い","up"], down:["↓ 売り","down"], flat:["→ 横ばい","flat"]};
+const HZ = {h1:60, h4:240};
+let R = [], hz = "h1", cf = 0, shown = 50;
+try{ hz = localStorage.getItem("ol-hz") || "h1"; cf = +(localStorage.getItem("ol-cf") || 0); }catch(e){}
+
+function seg(id, val, cb){
+  const el=$(id);
+  el.querySelectorAll("button").forEach(b=>{ b.setAttribute("aria-pressed", String(b.dataset.v===String(val)));
+    b.onclick=()=>{ el.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true"); cb(b.dataset.v); }; });
+}
+
+function render(){
+  const rows = R.filter(r=>r[hz] && (cf===0 || (r[hz].p!=null && r[hz].p>=cf)));
+  const done = rows.filter(r=>r[hz].p!=null && r[hz+"_hit"]!=null);
+  const hit = done.filter(r=>r[hz+"_hit"]).length;
+  const label = hz==="h1"?"1時間後":"4時間後";
+  $("sum").innerHTML = `${label}の見解 <b class="num">${rows.filter(r=>r[hz].p!=null).length}</b> 回（古い形を除く）・答え合わせ済み <b class="num">${done.length}</b> 回・当たり <b class="num">${done.length?`${hit}/${done.length}（${Math.round(hit/done.length*100)}%）`:"—"}</b>`;
+  const head = `<div class="row head"><span>出した時刻</span><span>金</span><span>${label}</span><span>理由</span><span>結果</span></div>`;
+  $("list").innerHTML = head + (rows.slice(0, shown).map(r=>{
+    const x=r[hz], a=AR[x.dir]||AR.flat, old = x.p==null;
+    const pp = old ? `<span class="p" title="自信（3段階）">${"●".repeat(x.conf||1)}${"○".repeat(3-(x.conf||1))}</span>` : `<span class="p">${x.p}%</span>`;
+    const chg = r[hz+"_chg"], h = r[hz+"_hit"];
+    let res;
+    if (h==null){
+      const due = new Date(new Date(r.t).getTime()+HZ[hz]*6e4);
+      res = `<span class="mk wait">待ち</span><span>${fmt(due.toISOString()).split(" ")[1]} に判定</span>`;
+    } else {
+      const sgn = x.dir==="down" ? -1 : 1, v = x.dir==="flat" ? chg : chg*sgn;
+      res = `<span class="mk ${h?"ok":"ng"}">${h?"当たり":"外れ"}</span>${x.dir==="flat"?"動き ":""}${v>0?"+":""}${(+v).toFixed(2)}%`;
+    }
+    const fr = (r.fresh||[]).length ? `<span class="fresh">材料: ${esc(r.fresh.slice(0,2).join(" / ")).slice(0,160)}</span>` : "";
+    const trig = r.trigger && r.trigger!=="定時" ? `<span class="trig">${esc(r.trigger)}</span>` : "";
+    return `<div class="row${old?" old":""}"><span class="t">${fmt(r.t)}${trig}</span><span class="px num">${(+r.price).toFixed(2)}</span>
+      <span class="dir ${a[1]}">${a[0]}${pp}</span><span class="why">${esc(x.why)}${fr}</span><span class="res">${res}</span></div>`;
+  }).join("") || `<div class="row"><span class="why" style="grid-column:1/-1">この条件の見解はまだありません</span></div>`);
+  const rest = rows.length - shown;
+  $("more").hidden = rest <= 0;
+  $("more").textContent = `もっと見る（あと${rest}件）`;
+}
+
+$("more").onclick = ()=>{ shown += 50; render(); };
+seg("hz", hz, v=>{ hz=v; shown=50; try{localStorage.setItem("ol-hz",v)}catch(e){} render(); });
+seg("cf", cf, v=>{ cf=+v; shown=50; try{localStorage.setItem("ol-cf",v)}catch(e){} render(); });
+
+async function load(){
+  try{
+    const r = await fetch("outlook_log.json?t="+Date.now(), {cache:"no-store"}); if(!r.ok) throw 0;
+    R = (await r.json()).recs || []; render();
+  }catch(e){ $("sum").textContent = "履歴を読み込めませんでした"; }
+}
+load(); setInterval(load, 3*60*1000);
+</script>
+</body>
+</html>

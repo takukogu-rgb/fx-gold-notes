@@ -433,6 +433,7 @@ async function loadOutlook(){
        1時間後 <b class="num">${rate(st.h1)}</b>　${bk(st.h1)}<br>
        4時間後 <b class="num">${rate(st.h4)}</b>　${bk(st.h4)}<br>
        （% は Claude が言った「その向きになる確率」。正しい見立てなら、自信60%台の見解は長く見て6割ほど当たる。11/28 から集計）<br>
+       <a href="outlook.html">→ 見解の履歴（全部）</a><br>
        Claude が値動き・強弱・金利・予定から出す見解（30分ごと。要人発言などの新しい材料や急な値動きがあれば、6分ごとの確認ですぐ出し直す）。実験中で、売買のすすめではありません。`;
   }catch(e){ $("olMeta").textContent="見解を読み込めませんでした"; }
 }
