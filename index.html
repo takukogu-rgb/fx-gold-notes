@@ -424,12 +424,12 @@ async function loadOutlook(){
       return `<div class="ol-row"><span class="ol-h">${lab}</span><span class="ol-dir ${a[1]}">${a[0]}${x.p!=null?`<span class="ol-p num" title="この向きになる確率（Claude の見立て）">${x.p}%</span>`:`<span class="ol-conf" title="自信（3段階）">${dots(x.conf||1)}</span>`}</span><span class="ol-why">${esc(x.why)}</span></div>`}).join("");
     const lv=c.levels||{}, f=v=>(+v).toFixed(1);
     const st=O.stats||{}, rate=s=>s&&s.n?`${s.hit}/${s.n}（${Math.round(s.hit/s.n*100)}%）`:"まだなし";
-    const bk=s=>(s&&s.buckets||[]).map(b=>`自信${b.label} <b class="num">${b.n?`${b.hit}/${b.n}（${Math.round(b.hit/b.n*100)}%）`:"—"}</b>`).join("・");
+    const bk=s=>(s&&s.buckets||[]).map(b=>`自信${b.label} <span class="num">${b.issued??0}回</span> 当たり <b class="num">${b.n?`${b.hit}/${b.n}（${Math.round(b.hit/b.n*100)}%）`:"—"}</b>`).join("・");
     $("olFoot").innerHTML=
       ((lv.resistance||[]).length||(lv.support||[]).length?`見るところ：上 <b class="num">${(lv.resistance||[]).map(f).join(" / ")||"—"}</b>・下 <b class="num">${(lv.support||[]).map(f).join(" / ")||"—"}</b><br>`:"")+
       ((c.fresh||[]).length?`反映した材料：${(c.fresh||[]).slice(0,3).map(esc).join(" / ")}<br>`:"")+
       (c.note?`注意：${esc(c.note)}<br>`:"")+
-      `これまでの当たり（向きが合えば当たり）<br>
+      `これまでの当たり（向きが合えば当たり。◯回＝その自信で出した回数）<br>
        1時間後 <b class="num">${rate(st.h1)}</b>　${bk(st.h1)}<br>
        4時間後 <b class="num">${rate(st.h4)}</b>　${bk(st.h4)}<br>
        （% は Claude が言った「その向きになる確率」。正しい見立てなら、自信60%台の見解は長く見て6割ほど当たる。11/28 から集計）<br>
