@@ -138,6 +138,7 @@ td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700
 .ol-h{font-size:12.5px;color:var(--muted);font-weight:700}
 .ol-dir{font-family:var(--f-display);font-weight:900;font-size:17px;white-space:nowrap}
 .ol-dir.up{color:var(--bull)} .ol-dir.down{color:var(--bear)} .ol-dir.flat{color:var(--flat)}
+.ol-p{font-size:15px;font-weight:700;margin-left:8px;color:var(--ink)}
 .ol-conf{font-size:11px;color:var(--muted);font-family:var(--f-body);font-weight:500;margin-left:4px}
 .ol-why{color:var(--ink);line-height:1.55}
 .ol-foot{font-size:12.5px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:8px}
@@ -398,22 +399,25 @@ async function loadOutlook(){
   try{
     const r=await fetch("outlook.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) throw 0;
     const O=await r.json(), c=O.current;
-    const AR={up:["↑ 上","up"],down:["↓ 下","down"],flat:["→ 横ばい","flat"]};
+    const AR={up:["↑ 買い","up"],down:["↓ 売り","down"],flat:["→ 横ばい","flat"]};
     const dots=n=>"●".repeat(n)+"○".repeat(3-n);
     if(!c){ $("olMeta").textContent="まだ見解がありません"; return; }
     const age=(Date.now()-new Date(c.t))/6e4;
     const trig=c.trigger&&c.trigger!=="定時"?`・${c.trigger}で更新`:"";
     $("olMeta").textContent=`${fmt(c.t)} 時点・金 ${(+c.price).toFixed(2)}${trig}`+(!O.open?"・休場中（最後の見解）":age>50?"・少し古い見解":"");
     $("olRows").innerHTML=[["h1","1時間後"],["h4","4時間後"]].map(([k,lab])=>{const x=c[k],a=AR[x.dir]||AR.flat;
-      return `<div class="ol-row"><span class="ol-h">${lab}</span><span class="ol-dir ${a[1]}">${a[0]}<span class="ol-conf" title="自信（3段階）">${dots(x.conf)}</span></span><span class="ol-why">${esc(x.why)}</span></div>`}).join("");
+      return `<div class="ol-row"><span class="ol-h">${lab}</span><span class="ol-dir ${a[1]}">${a[0]}${x.p!=null?`<span class="ol-p num" title="この向きになる確率（Claude の見立て）">${x.p}%</span>`:`<span class="ol-conf" title="自信（3段階）">${dots(x.conf||1)}</span>`}</span><span class="ol-why">${esc(x.why)}</span></div>`}).join("");
     const lv=c.levels||{}, f=v=>(+v).toFixed(1);
     const st=O.stats||{}, rate=s=>s&&s.n?`${s.hit}/${s.n}（${Math.round(s.hit/s.n*100)}%）`:"まだなし";
+    const bk=s=>(s&&s.buckets||[]).map(b=>`自信${b.label} <b class="num">${b.n?`${b.hit}/${b.n}（${Math.round(b.hit/b.n*100)}%）`:"—"}</b>`).join("・");
     $("olFoot").innerHTML=
       ((lv.resistance||[]).length||(lv.support||[]).length?`見るところ：上 <b class="num">${(lv.resistance||[]).map(f).join(" / ")||"—"}</b>・下 <b class="num">${(lv.support||[]).map(f).join(" / ")||"—"}</b><br>`:"")+
       ((c.fresh||[]).length?`反映した材料：${(c.fresh||[]).slice(0,3).map(esc).join(" / ")}<br>`:"")+
       (c.note?`注意：${esc(c.note)}<br>`:"")+
-      `これまでの当たり：1時間後 <b class="num">${rate(st.h1)}</b>・4時間後 <b class="num">${rate(st.h4)}</b>
-<br>（上・下は向きが合えば、横ばいは1時間後±${O.flat?.h1??0.1}%・4時間後±${O.flat?.h4??0.2}%以内なら当たり）<br>
+      `これまでの当たり（向きが合えば当たり）<br>
+       1時間後 <b class="num">${rate(st.h1)}</b>　${bk(st.h1)}<br>
+       4時間後 <b class="num">${rate(st.h4)}</b>　${bk(st.h4)}<br>
+       （% は Claude が言った「その向きになる確率」。正しい見立てなら、自信60%台の見解は長く見て6割ほど当たる。11/28 から集計）<br>
        Claude が値動き・強弱・金利・予定から出す見解（30分ごと。要人発言などの新しい材料や急な値動きがあれば、6分ごとの確認ですぐ出し直す）。実験中で、売買のすすめではありません。`;
   }catch(e){ $("olMeta").textContent="見解を読み込めませんでした"; }
 }
