@@ -46,6 +46,9 @@ header.top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:
   border-radius:4px;padding:0 .35em;margin-right:.4em;vertical-align:.35em}
 .brand p{margin:8px 0 0;color:var(--muted);max-width:56ch}
 .gauge{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.sc-alert{font-size:13px;line-height:1.55;border-radius:8px;padding:8px 10px;border:1px solid var(--line);background:var(--sunk)}
+.sc-alert.bull{border-color:var(--bull)} .sc-alert.bear{border-color:var(--bear)}
+.sc-alert b:first-child{color:var(--ink);margin-right:4px}
 .gauge-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
 .verdict{font-family:var(--f-display);font-weight:900;font-size:24px}
 .verdict.bull{color:var(--bull)} .verdict.bear{color:var(--bear)} .verdict.flat{color:var(--flat)}
@@ -160,6 +163,7 @@ td.up{color:var(--bull);font-weight:700} td.dn{color:var(--bear);font-weight:700
       <div class="meter" aria-hidden="true"><div id="needle" class="needle" style="left:50%"></div></div>
       <div class="scale"><span>弱気（下げ材料が優勢）</span><span>強気（上げ材料が優勢）</span></div>
       <div class="tally" id="tally"></div>
+      <div class="sc-alert" id="scAlert" hidden></div>
     </div>
   </header>
 
@@ -252,6 +256,17 @@ function renderTop(){
   $("needle").style.left=(50+r*50)+"%";
   $("verdict").textContent=label; $("verdict").className="verdict "+cls;
   $("tally").innerHTML=`<span>強気 <b class="b">${nb}</b></span><span>中立 <b>${nn}</b></span><span>弱気 <b class="r">${nr}</b></span><span>スコア <b class="num">${score>0?"+":""}${score} / ±${max}</b></span>`;
+  // スコアが変わった直後は目立たせる（大きな要因が動いた合図）
+  const h=D.history||[]; let ch=null;
+  for(let i=h.length-1;i>0;i--){ if(h[i].score!==h[i-1].score){ ch={a:h[i-1].score,b:h[i].score,t:h[i].t,c:h[i].changed||{}}; break; } }
+  const al=$("scAlert");
+  if(ch && Date.now()-new Date(ch.t) < 12*3600e3){
+    const why=Object.entries(ch.c).map(([k,v])=>(FMAP[k]?.name||k)+" "+v.split("→").map(z=>ST[z]?.label||z).join("→")).join("・");
+    const sg=n=>(n>0?"+":"")+n;
+    al.className="sc-alert "+(ch.b>ch.a?"bull":"bear");
+    al.innerHTML=`<b>注意</b> ${fmt(ch.t)} にスコアが <b class="num">${sg(ch.a)} → ${sg(ch.b)}</b> に変わりました${why?`（${esc(why)}）`:""}。大きな要因が動いた可能性があります`;
+    al.hidden=false;
+  } else al.hidden=true;
   const s=D.summary||{};
   $("updated").textContent = D.updatedAt ? "更新 "+fmt(D.updatedAt) : "";
   $("sumText").textContent = s.text || "まだまとめがありません。";
